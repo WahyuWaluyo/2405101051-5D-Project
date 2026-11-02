@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Tugas - Tugasku</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+<body data-page="tugas" data-auth="user">
+    <nav></nav>
+    <main>
+    <h1>Tugas</h1>
+    <form class="dua">
+        <input id="id" type="hidden"><div class="penuh"><label for="judul">Judul tugas</label><input id="judul"></div><div><label for="mk">Mata kuliah</label><select id="mk"></select></div><div><label for="deadline">Deadline</label><input id="deadline" type="date"></div><div><label for="prioritas">Prioritas</label><select id="prioritas"><option value="rendah">Rendah</option><option value="sedang">Sedang</option><option value="tinggi">Tinggi</option></select></div><div><label for="ket">Keterangan</label><input id="ket"></div><div class="penuh"><button id="simpan">Simpan tugas</button> <button type="button" id="batal" class="abu" hidden>Batal</button></div></form><h2>Daftar tugas</h2><div class="bar"><input id="cari" placeholder="Cari judul..."><select id="fMk"></select><select id="fStatus"></select></div><div class="scroll"><table><thead><tr><th>No</th><th>Judul</th><th>Mata kuliah</th><th>Deadline</th><th>Prioritas</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="isi"></tbody></table></div>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>

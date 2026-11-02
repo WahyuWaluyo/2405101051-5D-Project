@@ -1,0 +1,220 @@
+*{box-sizing:border-box}
+body{
+    font-family:"Segoe UI",system-ui,sans-serif;
+    background:#f1f4f9;
+    color:#1f2937;
+    margin:0
+}
+nav{
+    background:#1e3a8a;
+    padding:0 20px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px
+}
+nav a{
+    color:#cbd5f5;
+    text-decoration:none;
+    padding:14px 12px;
+    font-weight:600
+}
+nav a:hover,nav a.aktif{
+    color:#fff;
+    background:rgba(255,255,255,.12)
+}
+main{
+    max-width:960px;
+    margin:0 auto;
+    padding:28px 20px
+}
+h1{
+    margin:0 0 20px;
+    font-size:28px;
+    color:#1e3a8a
+}
+h2{
+    margin:28px 0 12px;
+    font-size:19px
+}
+.kartu,form{
+    background:#fff;
+    padding:22px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08)
+}
+form{
+    display:grid;
+    gap:14px;
+    max-width:460px
+}
+form.dua{
+    grid-template-columns:1fr 1fr;
+    max-width:none
+}
+.penuh{
+    grid-column:1/-1
+}
+label{
+    display:block;
+    margin-bottom:6px;
+    font-size:14px;
+    font-weight:600
+}
+input,select,textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    font:inherit
+}
+input:focus,select:focus,textarea:focus{
+    outline:none;
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,.2)
+}
+button,.btn{
+    background:#2563eb;
+    color:#fff;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    font:inherit;
+    font-weight:600;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-block
+}
+button:hover,.btn:hover{
+    background:#1d4ed8
+}
+.abu{
+    background:#64748b
+}
+td button,.bar+.scroll td button{
+    padding:5px 10px;
+    font-size:13px
+}
+td button[data-hapus]{
+    background:#fff;
+    color:#b42318;
+    border:1px solid #fda29b
+}
+.bar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:12px
+}
+.bar input,.bar select{
+    width:auto;
+    flex:1;
+    min-width:140px
+}
+.scroll{
+    overflow-x:auto;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08)
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff
+}
+th,td{
+    padding:11px 13px;
+    text-align:left;
+    border-bottom:1px solid #e5e7eb;
+    vertical-align:top
+}
+thead{
+    background:#1e3a8a;
+    color:#fff
+}
+tbody tr:hover{
+    background:#f8fafc
+}
+td select{
+    padding:6px 8px
+}
+.tinggi{
+    color:#b42318;
+    background:#fee4e2;
+    font-weight:700
+}
+.sedang{
+    color:#b54708;
+    background:#fef0c7;
+    font-weight:700
+}
+.rendah{
+    color:#067647;
+    background:#d1fadf;
+    font-weight:700
+}
+.telat{
+    background:#fff1f0
+}
+.selesai{
+    text-decoration:line-through;
+    opacity:.6
+}
+.banner {
+    background: #fef0c7;
+    color: #b54708;
+    border: 1px solid #fedf89;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px
+}
+.stat{
+    background:#fff;
+    border-radius:12px;
+    padding:18px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08)
+}
+.stat b{
+    display:block;
+    font-size:32px;
+    color:#1e3a8a
+}
+.kal td{
+    width:14.28%;
+    height:92px;
+    font-size:12px;
+    border:1px solid #e5e7eb
+}
+.kal th{
+    text-align:center
+}
+.tgs{
+    display:block;
+    border-radius:4px;
+    padding:2px 5px;
+    margin-top:3px;
+    font-weight:600
+}
+.judulbln{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:12px
+}
+.judulbln h2{
+    margin:0;
+    min-width:160px;
+    text-align:center
+}
+@media(max-width:600px){
+    form.dua{
+        grid-template-columns:1fr
+    }
+    .stats{
+        grid-template-columns:1fr
+    }
+}

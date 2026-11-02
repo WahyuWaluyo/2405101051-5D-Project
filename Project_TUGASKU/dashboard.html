@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard - Tugasku</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="dashboard" data-auth="user">
+<nav></nav>
+<main>
+<h1>Dashboard</h1>
+<div class="stats" id="stat"></div>
+<h2>Mendekati deadline (7 hari) dan terlambat</h2>
+<div class="scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>Tugas</th>
+                <th>Mata kuliah</th>
+                <th>Deadline</th>
+                <th>Sisa waktu</th>
+                <th>Prioritas</th>
+            </tr>
+        </thead>
+        <tbody id="isi"></tbody>
+    </table>
+</div>
+</main>
+<script src="app.js"></script>
+</body></html>
