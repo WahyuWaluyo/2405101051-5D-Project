@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kalender - Tugasku</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="kalender" data-auth="user">
+<nav></nav>
+<main>
+<h1>Kalender Tugas</h1>
+<div class="judulbln">
+    <button id="prev">&laquo;</button>
+    <h2 id="bulan"></h2>
+    <button id="next">&raquo;</button>
+</div>
+<div class="scroll">
+    <table class="kal">
+        <thead>
+            <tr>
+                <th>Sen</th>
+                <th>Sel</th>
+                <th>Rab</th>
+                <th>Kam</th>
+                <th>Jum</th>
+                <th>Sab</th>
+                <th>Min</th>
+            </tr>
+        </thead>
+        <tbody id="kal"></tbody>
+    </table>
+</div>
+<p class="legenda"><span class="badge belum">Belum Dikerjakan</span> <span class="badge proses">Sedang Diproses</span> <span class="badge selesai">Selesai</span></p>
+<div class="kartu" id="detail"><p>Klik sebuah tanggal untuk melihat tugasnya.</p></div>
+</main>
+<script src="app.js"></script>
+</body></html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Mata Kuliah - Tugasku</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+<body data-page="matkul" data-auth="user">
+<nav></nav>
+<main>
+    <h1>Mata Kuliah</h1>
+    <form>
+        <div>
+            <label for="nama">Nama mata kuliah</label>
+            <input id="nama">
+        </div>
+        <div>
+            <label for="kode">Kode</label>
+            <input id="kode">
+        </div>
+        <div>
+            <label for="dosen">Dosen</label>
+            <input id="dosen">
+        </div>
+        <button>Tambah</button>
+    </form>
+    <h2>Daftar mata kuliah</h2>
+    <div class="scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Kode</th>
+                    <th>Dosen</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="isi"></tbody>
+        </table>
+    </div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
