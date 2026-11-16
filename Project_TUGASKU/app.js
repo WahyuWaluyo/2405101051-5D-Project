@@ -5,25 +5,30 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;"
 const fmt = d => d.split("-").reverse().join("/");
 const cap = s => s[0].toUpperCase() + s.slice(1);
 const uid = () => Date.now() + Math.floor(Math.random() * 1000);
-const STATUS = ["Belum Dikerjakan", "Proses", "Selesai"];
+const STATUS = ["Belum Dikerjakan", "Sedang Diproses", "Selesai"];
+const BADGE = ["belum", "proses", "selesai"];
+const badge = s => `<span class="badge ${BADGE[s]}">${STATUS[s]}</span>`;
+const chip = p => `<span class="chip ${p}">${cap(p)}</span>`;
+const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const besok = () => { const d = new Date(); d.setDate(d.getDate() + 1); return iso(d); };
 const sisa = d => Math.round((new Date(d + "T00:00:00") - new Date().setHours(0, 0, 0, 0)) / 864e5);
 
 let users = load("users", [{ id: 1, name: "Admin", email: "admin@tugasku.id", password: "admin123", role: "admin", active: true }]);
 let courses = load("courses", []);
 let tasks = load("tasks", []);
-let me = load("me", null);
-const simpan = () => { save("users", users); save("courses", courses); save("tasks", tasks); save("me", me); };
+let me = (() => { try { return JSON.parse(sessionStorage.getItem("me")); } catch (e) { return null; } })();
+const simpan = () => { save("users", users); save("courses", courses); save("tasks", tasks); sessionStorage.setItem("me", JSON.stringify(me)); };
 const myTasks = () => tasks.filter(t => t.userId === me.id);
 const myCourses = () => courses.filter(c => c.userId === me.id);
 const namaMk = id => (courses.find(c => c.id === id) || { name: "-" }).name;
 
 function renderNav() {
     const l = me
-        ? [["dashboard.html", "Dashboard"], ["tugas.html", "Tugas"], ["matkul.html", "Mata Kuliah"], ["kalender.html", "Kalender"], ["profil.html", "Profil"]]
-        : [["index.html", "Beranda"], ["login.html", "Masuk"], ["register.html", "Daftar"]];
+        ? [["dashboard.html", "Dashboard"], ["matkul.html", "Mata Kuliah"], ["tugas.html", "Tugas"], ["kalender.html", "Kalender"], ["profil.html", "Profil"]]
+        : [["login.html", "Masuk"], ["register.html", "Daftar"]];
     if (me && me.role === "admin") l.splice(4, 0, ["pengguna.html", "Pengguna"]);
     const cur = location.pathname.split("/").pop() || "index.html";
-    $("nav").innerHTML = l.map(([h, t]) => `<a href="${h}" class="${h === cur ? "aktif" : ""}">${t}</a>`).join("") + (me ? `<a href="#" id="keluar">Keluar</a>` : "");
+    $("nav").innerHTML = `<a class="brand" href="${me ? "dashboard.html" : "login.html"}">Tugasku</a><span class="gap"></span>` + l.map(([h, t]) => `<a href="${h}" class="${h === cur ? "aktif" : ""}">${t}</a>`).join("") + (me ? `<a href="#" id="keluar">Keluar</a>` : "");
     if (me) $("#keluar").addEventListener("click", e => { e.preventDefault(); me = null; simpan(); location = "login.html"; });
 }
 
@@ -68,14 +73,17 @@ const pages = {
     },
 
     dashboard() {
-        const t = myTasks();
-        $("#stat").innerHTML = STATUS.map((s, i) => `<div class="stat"><b>${t.filter(x => x.status === i).length}</b>${s}</div>`).join("");
+        const t = myTasks(), sel = t.filter(x => x.status === 2).length;
+        $("#salam").textContent = "Halo, " + me.name + "!";
+        $("#stat").innerHTML = STATUS.map((s, i) => `<div class="stat s${i}"><b>${t.filter(x => x.status === i).length}</b>${s}</div>`).join("");
+        $("#prog").style.width = (t.length ? Math.round(sel / t.length * 100) : 0) + "%";
+        $("#progTxt").textContent = `${sel} dari ${t.length} tugas sudah selesai`;
         const dekat = t.filter(x => x.status !== 2 && sisa(x.deadline) <= 7).sort((a, b) => a.deadline.localeCompare(b.deadline));
         $("#isi").innerHTML = dekat.map(x => {
             const s = sisa(x.deadline);
             const ket = s < 0 ? "Terlambat " + (-s) + " hari" : s === 0 ? "Hari ini" : s + " hari lagi";
-            return `<tr class="${s < 0 ? "telat" : ""}"><td>${esc(x.title)}</td><td>${esc(namaMk(x.courseId))}</td><td>${fmt(x.deadline)}</td><td>${ket}</td><td class="${x.priority}">${cap(x.priority)}</td></tr>`;
-        }).join("") || `<tr><td colspan="5">Tidak ada tugas yang mendesak.</td></tr>`;
+            return `<tr class="${s < 0 ? "telat" : ""}"><td>${esc(x.title)}</td><td>${esc(namaMk(x.courseId))}</td><td>${fmt(x.deadline)}</td><td>${ket}</td><td>${chip(x.priority)}</td><td>${badge(x.status)}</td></tr>`;
+        }).join("") || `<tr><td colspan="6">Tidak ada tugas yang mendesak.</td></tr>`;
     },
 
     matkul() {
@@ -105,23 +113,28 @@ const pages = {
         $("#mk").innerHTML = opt || `<option value="">(tambah mata kuliah dulu)</option>`;
         $("#fMk").innerHTML = `<option value="">Semua mata kuliah</option>` + opt;
         $("#fStatus").innerHTML = `<option value="">Semua status</option>` + STATUS.map((s, i) => `<option value="${i}">${s}</option>`).join("");
+        const min = besok(); let asli = "";
+        $("#deadline").min = min;
+        const tgl = new URLSearchParams(location.search).get("tgl");
+        if (tgl && tgl >= min) $("#deadline").value = tgl;
 
         const tampil = () => {
             const q = $("#cari").value.toLowerCase(), fm = $("#fMk").value, fs = $("#fStatus").value;
             const rows = myTasks()
                 .filter(t => (!fm || t.courseId === Number(fm)) && (fs === "" || t.status === Number(fs)) && t.title.toLowerCase().includes(q))
                 .sort((a, b) => a.deadline.localeCompare(b.deadline));
-            $("#isi").innerHTML = rows.map((t, i) => `<tr><td>${i + 1}</td><td>${esc(t.title)}</td><td>${esc(namaMk(t.courseId))}</td><td>${fmt(t.deadline)}</td><td class="${t.priority}">${cap(t.priority)}</td>
-                <td><select data-st="${t.id}">${STATUS.map((s, j) => `<option value="${j}"${t.status === j ? " selected" : ""}>${s}</option>`).join("")}</select></td>
-                <td><button data-ubah="${t.id}">Ubah</button> <button data-hapus="${t.id}">Hapus</button></td></tr>`).join("") || `<tr><td colspan="7">Tidak ada tugas.</td></tr>`;
+            const aksi = t => t.status === 0 ? `<button data-st="${t.id}" data-to="1">Mulai</button>` : t.status === 1 ? `<button data-st="${t.id}" data-to="2">Selesai</button>` : `<button class="abu" data-st="${t.id}" data-to="0">Buka lagi</button>`;
+            $("#isi").innerHTML = rows.map((t, i) => `<tr class="${t.status === 2 ? "done" : t.status !== 2 && sisa(t.deadline) < 0 ? "telat" : ""}"><td>${i + 1}</td><td><span class="jdl">${esc(t.title)}</span>${t.desc ? `<small class="ket">${esc(t.desc)}</small>` : ""}</td><td>${esc(namaMk(t.courseId))}</td><td>${fmt(t.deadline)}</td><td>${chip(t.priority)}</td><td>${badge(t.status)}</td>
+                <td>${aksi(t)} <button data-ubah="${t.id}">Ubah</button> <button data-hapus="${t.id}">Hapus</button></td></tr>`).join("") || `<tr><td colspan="7">Tidak ada tugas.</td></tr>`;
         };
-        const reset = () => { $("form").reset(); $("#id").value = ""; $("#batal").hidden = true; $("#simpan").textContent = "Simpan tugas"; };
+        const reset = () => { $("form").reset(); $("#id").value = ""; asli = ""; $("#batal").hidden = true; $("#simpan").textContent = "Simpan tugas"; };
 
         $("form").addEventListener("submit", e => {
             e.preventDefault();
             const data = { courseId: Number($("#mk").value), title: $("#judul").value.trim(), desc: $("#ket").value.trim(), deadline: $("#deadline").value, priority: $("#prioritas").value };
             if (!data.title || !data.courseId || !data.deadline) return alert("Judul, mata kuliah, dan deadline wajib diisi.");
             const id = Number($("#id").value);
+            if (data.deadline < min && !(id && data.deadline === asli)) return alert("Deadline hanya bisa dipilih mulai besok (" + fmt(min) + ") dan seterusnya.");
             if (id) Object.assign(tasks.find(t => t.id === id), data);
             else tasks.push({ id: uid(), userId: me.id, status: 0, ...data });
             simpan(); reset(); tampil();
@@ -129,13 +142,12 @@ const pages = {
         $("#batal").addEventListener("click", reset);
         ["#cari", "#fMk", "#fStatus"].forEach(s => $(s).addEventListener("input", tampil));
 
-        $("#isi").addEventListener("change", e => {
-            if (e.target.dataset.st) { tasks.find(t => t.id === Number(e.target.dataset.st)).status = Number(e.target.value); simpan(); tampil(); }
-        });
         $("#isi").addEventListener("click", e => {
-            const ubah = Number(e.target.dataset.ubah), hapus = Number(e.target.dataset.hapus);
+            const b = e.target.closest("button"); if (!b) return;
+            const st = Number(b.dataset.st), ubah = Number(b.dataset.ubah), hapus = Number(b.dataset.hapus);
+            if (st) { tasks.find(t => t.id === st).status = Number(b.dataset.to); simpan(); tampil(); }
             if (ubah) {
-                const t = tasks.find(x => x.id === ubah);
+                const t = tasks.find(x => x.id === ubah); asli = t.deadline;
                 $("#id").value = t.id; $("#judul").value = t.title; $("#mk").value = t.courseId; $("#deadline").value = t.deadline;
                 $("#prioritas").value = t.priority; $("#ket").value = t.desc;
                 $("#batal").hidden = false; $("#simpan").textContent = "Simpan perubahan"; scrollTo(0, 0);
@@ -147,7 +159,15 @@ const pages = {
 
     kalender() {
         const bln = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        let y = new Date().getFullYear(), m = new Date().getMonth();
+        let y = new Date().getFullYear(), m = new Date().getMonth(), pilih = "";
+        const min = besok(), hari = iso(new Date());
+        const detail = tgl => {
+            const ts = myTasks().filter(x => x.deadline === tgl);
+            $("#detail").innerHTML = `<h2>${fmt(tgl)}</h2>` + (ts.length
+                ? `<ul>${ts.map(x => `<li><b>${esc(x.title)}</b> <small>${esc(namaMk(x.courseId))}</small><br>${chip(x.priority)} ${badge(x.status)}</li>`).join("")}</ul>`
+                : `<p>Tidak ada tugas di tanggal ini.</p>`)
+                + (tgl >= min ? `<a class="btn" href="tugas.html?tgl=${tgl}">+ Tambah tugas di tanggal ini</a>` : `<p><small>Tanggal ini sudah lewat atau hari ini. Deadline baru hanya bisa dipilih mulai besok.</small></p>`);
+        };
         const tampil = () => {
             $("#bulan").textContent = bln[m] + " " + y;
             const awal = (new Date(y, m, 1).getDay() + 6) % 7, jml = new Date(y, m + 1, 0).getDate();
@@ -155,11 +175,15 @@ const pages = {
             for (let d = 1; d <= jml; d++) {
                 if ((awal + d - 1) % 7 === 0 && d > 1) h += "</tr><tr>";
                 const tgl = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-                const isi = myTasks().filter(x => x.deadline === tgl).map(x => `<span class="tgs ${x.priority}${x.status === 2 ? " selesai" : ""}">${esc(x.title)}</span>`).join("");
-                h += `<td><b>${d}</b>${isi}</td>`;
+                const isi = myTasks().filter(x => x.deadline === tgl).map(x => `<span class="tgs ${x.priority}${x.status === 2 ? " selesai" : ""}"><i class="dot s${x.status}"></i>${esc(x.title)}</span>`).join("");
+                h += `<td class="hari${tgl < min ? " lewat" : ""}${tgl === hari ? " hariini" : ""}${tgl === pilih ? " dipilih" : ""}" data-tgl="${tgl}"><b>${d}</b>${isi}</td>`;
             }
             $("#kal").innerHTML = h + "</tr>";
         };
+        $("#kal").addEventListener("click", e => {
+            const td = e.target.closest("td[data-tgl]"); if (!td) return;
+            pilih = td.dataset.tgl; tampil(); detail(pilih);
+        });
         $("#prev").addEventListener("click", () => { m--; if (m < 0) { m = 11; y--; } tampil(); });
         $("#next").addEventListener("click", () => { m++; if (m > 11) { m = 0; y++; } tampil(); });
         tampil();
@@ -194,12 +218,12 @@ const pages = {
     }
 };
 
-const auth = document.body.dataset.auth;
-if (auth !== "none" && !me) location = "login.html";
-else if (auth === "admin" && me.role !== "admin") location = "dashboard.html";
+const auth = document.body.dataset.auth, halaman = document.body.dataset.page;
+if (halaman === "index" || (me && (halaman === "login" || halaman === "register"))) location.replace(me ? "dashboard.html" : "login.html");
+else if (auth !== "none" && !me) location.replace("login.html");
+else if (auth === "admin" && me.role !== "admin") location.replace("dashboard.html");
 else {
     renderNav();
-    const halaman = document.body.dataset.page;
     if (halaman === "dashboard" || halaman === "tugas") tampilBanner();
     const p = pages[halaman];
     if (p) p();
